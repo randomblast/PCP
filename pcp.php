@@ -31,13 +31,15 @@
 		/// @param string|array $source .pcp/.css file to add to the list of files to parse
 		function add_source($source)
 		{
-			if(is_a($source, 'string'))
-			{
-				if(file_exists($source)) $state['sources'][] = $source;
-			} else if(is_a($source, 'array'))
+			if(is_array($source))
 			{
 				foreach($source as $src)
-					if(file_exists($src)) $state['sources'][] = $src;
+					if(file_exists($src))
+						array_push($this->state['sources'], $src);
+			} else
+			{
+				if(file_exists($source))
+					array_push($this->state['sources'], $source);
 			}
 		}
 		
