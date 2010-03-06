@@ -148,11 +148,13 @@
 
 								// Is there already an open property?
 								if($p)
+								{
 									trigger_error(
 										  "$src:$ln:$cn: Found ':' in property '".trim($p->name)."'"
 										, E_USER_WARNING
 									);
-								else
+									$buf .= ':';
+								} else
 								{
 									// Look ahead for pseudo-class names
 									// We need to do this to differentiate between nested selectors
