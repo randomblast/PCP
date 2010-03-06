@@ -126,7 +126,7 @@
 										{
 											trigger_error(
 												  "$src:$ln:$sc: Property not closed properly. "
-												 ."Assumed '{$p->name}: $buf'"
+												 ."Assumed '{$p->name}: ".trim($buf).";'"
 												, E_USER_WARNING
 											);
 
@@ -149,7 +149,7 @@
 								// Is there already an open property?
 								if($p)
 									trigger_error(
-										  "$src:$ln:$cn: Found ':' in property value"
+										  "$src:$ln:$cn: Found ':' in property '".trim($p->name)."'"
 										, E_USER_WARNING
 									);
 								else
