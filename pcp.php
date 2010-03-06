@@ -98,7 +98,7 @@
 							case '{':	// selector { properties
 
 								// Convert buffer into selector, then clear
-								if(false === ($sel = $this->clean_selector($buf))) fclose($fd);
+								if(false === ($sel = $this->clean_token($buf))) fclose($fd);
 								$buf = '';
 
 								// Add selector to stack
@@ -172,7 +172,7 @@
 									$p->ln = $ln;
 									$p->cn = $cn;
 
-									$p->name = trim($buf);
+									$p->name = $this->clean_token($buf);
 									$buf = '';
 
 									$fselectors[end($selector)][$p->name] = &$p;
@@ -271,18 +271,22 @@
 		function js()
 		{
 		}
-		/// Validate selector and prepare for use as a hash
-		function clean_selector($sel)
+		/// Validate selectors/property names and prepare for use as a hash
+		function clean_token($sel)
 		{
 			return preg_replace(
 				array(
-					  '/\s+>\s+/'	// Strip whitespace from around '>'
-					, '/\s+\+\s+/'	// Strip whitespace from around '+'
-					, '/^\s+/'		// Strip whitespace from beginning
-					, '/\s+$/'		// Strip whitespace from end
+					  '/\s+>\s+/'			// Strip whitespace from around '>'
+					, '/\s+\+\s+/'			// Strip whitespace from around '+'
+					, '/\s\s+/'				// Strip extraneous whitespace
+					, '/^\s+/'				// Strip whitespace from beginning
+					, '/\s+$/'				// Strip whitespace from end
+					, '/\/\*.*?\*\//'		// /* Comment */
+					, '/\/\/.*?$/'			// // Comment
 				), array(
 					  '>'
 					, '+'
+					, ' '
 				), $sel
 			);
 		}
