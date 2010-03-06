@@ -159,6 +159,7 @@
 									// Look ahead for pseudo-class names
 									// We need to do this to differentiate between nested selectors
 									// and properties.
+									// TODO Maybe redo this to just see which comes first of (;|{)?
 									$la = fread($fd, 24);
 									fseek($fd, -(strlen($la)), SEEK_CUR);
 									$la = preg_replace('/\W.*/', '', $la);
