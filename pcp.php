@@ -127,6 +127,9 @@
 									$p->ln = $ln;
 									$p->cn = $cn;
 
+									$p->name = trim($buf);
+									$buf = '';
+
 									$fstate[end($selector)][$p->name] = &$p;
 								}
 
