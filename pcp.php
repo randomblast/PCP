@@ -196,8 +196,17 @@
 		/// Validate selector and prepare for use as a hash
 		function clean_selector($sel)
 		{
-			// TODO Do this properly
-			return $sel;
+			return preg_replace(
+				array(
+					  '/\s+>\s+/'	// Strip whitespace from around '>'
+					, '/\s+\+\s+/'	// Strip whitespace from around '+'
+					, '/^\s+/'		// Strip whitespace from beginning
+					, '/\s+$/'		// Strip whitespace from end
+				), array(
+					  '>'
+					, '+'
+				), $sel
+			);
 		}
 	}
 
