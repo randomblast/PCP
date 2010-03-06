@@ -89,7 +89,7 @@
 					$buf = '';				// Chomped input
 					$selector = array();	// Stack of working selectors
 					$p;						// Current property. @see PCP_Property
-					$fstate = array();		// Per-file state. @see $state
+					$fselectors = array();		// Per-file state. @see $state
 
 					while(false !== ($c = fgetc($fd)))
 					{
@@ -175,7 +175,7 @@
 									$p->name = trim($buf);
 									$buf = '';
 
-									$fstate[end($selector)][$p->name] = &$p;
+									$fselectors[end($selector)][$p->name] = &$p;
 								}
 
 								break;
@@ -216,6 +216,26 @@
 					if($fd)
 					{
 						// Merge file state into global state
+						foreach($fselectors as $selector => $properties)
+						{
+							foreach($properties as $p)
+							{
+								// Have we declared this property for this selector aready?
+								if(isset($this->state['selectors'][$selector][$p->name]))
+								{
+									$op = $this->state['selectors'][$selector][$p->name];
+									trigger_error(
+										  "{$p->src}:{$p->ln}:{$p->cn}: Redefining property "
+										 ."'{$p->name}' in '{$selector}'.\n"
+										 ."Previously declared at {$op->src}:{$op->ln}:{$op->cn}"
+										, E_USER_WARNING
+									);
+								}
+
+								$this->state['selectors'][$selector][$p->name] = $p;
+							}
+						}
+							
 
 						fclose($fd);
 					}
