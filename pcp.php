@@ -118,7 +118,7 @@
 								// Is there already an open property?
 								if($p)
 									trigger_error(
-										  "$src:$ln:$sc: Found ':' in property value"
+										  "$src:$ln:$cn: Found ':' in property value"
 										, E_USER_WARNING
 									);
 								else
