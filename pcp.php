@@ -25,7 +25,7 @@
 		function __construct($cache = null)
 		{
 			if($cache)
-				$state = unserialize(file_get_contents($cache));
+				$this->state = unserialize(@file_get_contents($cache));
 		}
 
 		/// @param string|array $source .pcp/.css file to add to the list of files to parse
@@ -47,14 +47,14 @@
 		function parse()
 		{
 			// Clear the state
-			$state['variables'] = array();
-			$state['selectors'] = array(); // $state['selectors']['div.foo#bar>p a:hover']['width']
+			$this->state['variables'] = array();
+			$this->state['selectors'] = array();
 
-			foreach($state['sources'] as $src)
+			foreach($this->state['sources'] as $src)
 			{
 				if(false !== ($fd = fopen($src, 'r')))
 				{
-					$ln = 0; $cn = 0;			// Line number, Column number
+					$ln = 0; $cn = 0;		// Line number, Column number
 					$buf = '';				// Chomped input
 					$selector = array();	// Stack of working selectors
 					$p;						// Current property. @see PCP_Property
@@ -67,7 +67,7 @@
 							case '{':	// selector { properties
 
 								// Convert buffer into selector, then clear
-								if(false === ($sel = clean_selector($buf))) fclose($fd);
+								if(false === ($sel = $this->clean_selector($buf))) fclose($fd);
 								$buf = '';
 
 								// Add selector to stack
