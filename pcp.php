@@ -252,6 +252,19 @@
 		/// Write static CSS
 		function css()
 		{
+			ob_start();
+
+			foreach($this->state['selectors'] as $selector => $properties)
+			{
+				echo "$selector{";
+				
+				foreach($properties as $p)
+					echo "{$p->name}:{$p->value};";
+
+				echo '}';
+			}
+
+			return ob_get_clean();
 		}
 
 		/// Write javascript engine
