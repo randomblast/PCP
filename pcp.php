@@ -19,6 +19,37 @@
 			, 'selectors' => array()
 		);
 
+		private $pseudo_classes = array(
+			// CSS 1
+			  'active'
+			, 'hover'
+			, 'link'
+			, 'visited'
+
+			// CSS 2
+			, 'first-child'
+			, 'focus'
+			, 'lang'
+
+			// CSS 3
+			, 'nth-child'
+			, 'nth-last-child'
+			, 'nth-of-type'
+			, 'nth-last-of-type'
+			, 'last-child'
+			, 'first-of-type'
+			, 'last-of-type'
+			, 'only-child'
+			, 'only-of-type'
+			, 'root'
+			, 'empty'
+			, 'target'
+			, 'enabled'
+			, 'disabled'
+			, 'checked'
+			, 'not'
+		);
+
 		/**
 		 * @param string $cache Filename of engine cache
 		 */
@@ -123,6 +154,20 @@
 									);
 								else
 								{
+									// Look ahead for pseudo-class names
+									// We need to do this to differentiate between nested selectors
+									// and properties.
+									$la = fread($fd, 24);
+									fseek($fd, -(strlen($la)), SEEK_CUR);
+									$la = preg_replace('/\W.*/', '', $la);
+
+									// If next word is a valid pseudo-class, pass ':' through to $buf
+									if(in_array($la, $this->pseudo_classes))
+									{
+										$buf .= ':';
+										break;
+									}
+
 									$p->src = $src;
 									$p->ln = $ln;
 									$p->cn = $cn;
