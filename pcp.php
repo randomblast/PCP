@@ -56,7 +56,7 @@
 		 */
 		function __construct($cache = null)
 		{
-			if($cache)
+			if(file_exists($cache))
 				$this->state = unserialize(@file_get_contents($cache));
 
 			// Hook into global
