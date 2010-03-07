@@ -89,7 +89,7 @@
 					$buf = '';				// Chomped input
 					$selector = array();	// Stack of working selectors
 					$p;						// Current property. @see PCP_Property
-					$fselectors = array();		// Per-file state. @see $state
+					$fselectors = array();	// Per-file state. @see $state
 
 					while(false !== ($c = fgetc($fd)))
 					{
@@ -171,13 +171,16 @@
 										break;
 									}
 
+									$p = new PCP_Property(
+										  end($selector)
+										, $this->clean_token($buf)
+									);
+
 									$p->src = $src;
 									$p->ln = $ln;
 									$p->cn = $cn;
 
-									$p->name = $this->clean_token($buf);
 									$buf = '';
-
 									$fselectors[end($selector)][$p->name] = &$p;
 								}
 
@@ -187,7 +190,7 @@
 
 								if($p)
 								{
-									$p->value = trim($buf);
+									$p->set(trim($buf));
 									$buf = '';
 									unset($p);
 								} else
@@ -262,7 +265,7 @@
 				echo "$selector{";
 				
 				foreach($properties as $p)
-					echo "{$p->name}:{$p->value};";
+					echo "{$p->name}:{$p->value()};";
 
 				echo '}';
 			}
@@ -297,11 +300,116 @@
 
 	class PCP_Property
 	{
-		var $name;
-		var $value;
-		var $src;
-		var $ln;
-		var $cn;
+		var $name;				/// string
+		var $value;				/// string Unprocessed value
+		var $rvalue;			/// string Real value
+		var $src;				/// string Source file
+		var $ln;				/// int Line number
+		var $cn;				/// int Column number
+		var $selector;			/// string Selector containing this property
+		var $deps;				/// array Properties this depends on. @see PCP_Property
+		var $changed;			/// bool Has set() been called since last value()
+
+		function __construct($selector, $name)
+		{
+			// TODO Validate these inputs, add error messages
+			$this->deps = array();
+			$this->name = $name;
+			$this->selector = $selector;
+		}
+
+		/**
+		 * Compute new value
+		 */
+		function value()
+		{
+			// Return precomputed value if no inputs have changed
+			if(!$this->changed())
+				return $this->rvalue;
+
+			// TODO Parse property, replace dependency tokens with $dep->value()
+			$this->rvalue = $this->value;
+
+			// Reset changed indicator and return real value
+			$this->changed = false;
+			return $this->rvalue;
+		}
+
+		/**
+		 * Set new value
+		 */
+		function set($new)
+		{
+			$this->value = $new;
+
+			// Tell changed() about the new value
+			$this->changed = true;
+
+			// Invalidate dependencies
+			$this->deps = null;
+		}
+
+		/**
+		 * Has $this->value, or any dependency values changed?
+		 * This function will be called frequently - it must be fast
+		 * @returns bool
+		 */
+		function changed()
+		{
+			// Check for changed $this->value
+			if($this->changed == true)
+				return true;
+
+			// Check for changed dependencies
+			foreach($this->deps() as $dep)
+				if($dep->changed())
+					return true;
+
+			// Nothing changed
+			return false;
+		}
+
+		/**
+		 * @returns array Array of @see PCP_Property dependencies
+		 */
+		private function deps()
+		{
+			// Return cached value
+			if(null !== $this->deps)
+				return $this->deps;
+
+			$this->deps = array();
+
+			// Find variables and PCP expressions in value
+			preg_match_all('/\$(\(.*?\)|[\w-]*)/', $this->value, $matches);
+
+			// Loop through found $ tokens
+			foreach($matches[0] as $dep)
+			{
+				// Parse tokens into selector->property pairs or just property names
+				preg_match('/\$\((.*?)\s*->\s*(.*?)\s*\)|(\$[\w-]*)/', $dep, $splitdep);
+
+				if($splitdep[3])
+				{
+					// Property name 
+
+					// Broaden scope until we find the named property
+					$scope = $this->selector;
+					while(strlen($scope))
+					{
+						if(isset($pcp->state['selectors'][$scope][$splitdep[3]]))
+							$this->deps[] = $pcp->state['selectors'][$scope][$splitdep[3]];
+						else
+							$scope = preg_replace('/[ >+]?.*$/', '', $scope);
+					}
+				} else
+				{
+					// Selector->Property
+				}
+			}
+
+			return $this->deps;
+		}
 	}
 	/**
 	 * Get or set a single property or variable in a selector
