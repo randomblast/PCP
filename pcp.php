@@ -93,7 +93,7 @@
 					$ln = 0; $cn = 0;		// Line number, Column number
 					$buf = '';				// Chomped input
 					$selector = array();	// Stack of working selectors
-					$p;						// Current property. @see PCP_Property
+					$p = null;				// Current property. @see PCP_Property
 					$fselectors = array();	// Per-file state. @see $state
 
 					while(false !== ($c = fgetc($fd)))
