@@ -402,6 +402,17 @@
 				} else
 				{
 					// Selector->Property
+					
+					if(!($this->deps[] = $pcp->state['selectors'][$splitdep[1]][$splitdep[2]]))
+					{
+						trigger_error(
+							  "{$this->src}:{$this->ln}:{$this->cn}: "
+							 ."Reference made to undeclared property '{$splitdep[2]}' "
+							 ."in '{$splitdep[1]}'"
+							, E_USER_ERROR
+						);
+						exit(-1);
+					}
 				}
 			}
 
