@@ -404,14 +404,15 @@
 
 					// Broaden scope until we find the named property
 					$scope = $this->selector;
-					while(strlen($scope))
+					$n = 1;
+					while($n)
 					{
 						if(isset($pcp->state['selectors'][$scope][$splitdep[3]]))
 						{
 							$this->deps[$dep] = $pcp->state['selectors'][$scope][$splitdep[3]];
 							$scope = '';
 						} else
-							$scope = preg_replace('/[ >+]?.*$/', '', $scope);
+							$scope = preg_replace('/[ >+].*$/', '', $scope, -1, $n);
 					}
 				} else
 				{
