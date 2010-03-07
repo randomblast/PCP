@@ -1,4 +1,5 @@
 <?
+	global $pcp;
 	/**
 	 * PCP Engine
 	 *
@@ -12,7 +13,7 @@
 	 */
 	class PCP
 	{
-		private $state = array(
+		var $state = array(
 			  'sources' => array()
 			, 'variables' => array()
 			// $state['selectors']['div.foo#bar'] = array(PCP_Property, PCP_Property, ...)
@@ -57,6 +58,10 @@
 		{
 			if($cache)
 				$this->state = unserialize(@file_get_contents($cache));
+
+			// Hook into global
+			global $pcp;
+			$pcp = &$this;
 		}
 
 		/// @param string|array $source .pcp/.css file to add to the list of files to parse
@@ -369,6 +374,8 @@
 		 */
 		private function deps()
 		{
+			global $pcp;
+
 			// Return cached value
 			if(null !== $this->deps)
 				return $this->deps;
