@@ -265,7 +265,8 @@
 				echo "$selector{";
 				
 				foreach($properties as $p)
-					echo "{$p->name}:{$p->value()};";
+					if($p->name[0] != '$')
+						echo "{$p->name}:{$p->value()};";
 
 				echo '}';
 			}
