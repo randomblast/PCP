@@ -334,7 +334,8 @@
 
 			// Loop through deps, replace tokens with values
 			foreach($deps as $dep => $p)
-				$this->rvalue = str_replace($dep, $p->value(), $this->rvalue);
+				if($p->value())
+					$this->rvalue = str_replace($dep, $p->value(), $this->rvalue);
 
 			// Reset changed indicator and return real value
 			$this->changed = false;
