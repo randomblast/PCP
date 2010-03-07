@@ -330,6 +330,12 @@
 			// TODO Parse property, replace dependency tokens with $dep->value()
 			$this->rvalue = $this->value;
 
+			$deps = $this->deps();
+
+			// Loop through deps, replace tokens with values
+			foreach($deps as $dep => $p)
+				$this->rvalue = str_replace($dep, $p->value(), $this->rvalue);
+
 			// Reset changed indicator and return real value
 			$this->changed = false;
 			return $this->rvalue;
@@ -401,7 +407,7 @@
 					{
 						if(isset($pcp->state['selectors'][$scope][$splitdep[3]]))
 						{
-							$this->deps[] = $pcp->state['selectors'][$scope][$splitdep[3]];
+							$this->deps[$dep] = $pcp->state['selectors'][$scope][$splitdep[3]];
 							$scope = '';
 						} else
 							$scope = preg_replace('/[ >+]?.*$/', '', $scope);
@@ -410,7 +416,7 @@
 				{
 					// Selector->Property
 					
-					if(!($this->deps[] = $pcp->state['selectors'][$splitdep[1]][$splitdep[2]]))
+					if(!($this->deps[$dep] = $pcp->state['selectors'][$splitdep[1]][$splitdep[2]]))
 					{
 						trigger_error(
 							  "{$this->src}:{$this->ln}:{$this->cn}: "
