@@ -393,8 +393,10 @@
 					while(strlen($scope))
 					{
 						if(isset($pcp->state['selectors'][$scope][$splitdep[3]]))
+						{
 							$this->deps[] = $pcp->state['selectors'][$scope][$splitdep[3]];
-						else
+							$scope = '';
+						} else
 							$scope = preg_replace('/[ >+]?.*$/', '', $scope);
 					}
 				} else
