@@ -276,7 +276,7 @@
 				foreach($properties as $p)
 					if($p->name[0] != '$' && (!$diff || $p->changed()))
 					{
-						echo "{$p->name}:{$p->value()};";
+						echo "{$p->name}:{$p->value(true)};";
 						$empty = false;
 					}
 
