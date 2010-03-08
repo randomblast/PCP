@@ -321,8 +321,9 @@
 
 		/**
 		 * Compute new value
+		 * @param bool $is_output Decides whether the property will be marked as unchanged
 		 */
-		function value()
+		function value($is_output = false)
 		{
 			// Return precomputed value if no inputs have changed
 			if(!$this->changed())
@@ -339,7 +340,8 @@
 					$this->rvalue = str_replace($dep, $p->value(), $this->rvalue);
 
 			// Reset changed indicator and return real value
-			$this->changed = false;
+			if($is_output)
+				$this->changed = false;
 			return $this->rvalue;
 		}
 
