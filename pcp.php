@@ -331,6 +331,7 @@
 		{
 			// TODO Validate these inputs, add error messages
 			$this->deps = array();
+			$this->dependants = array();
 			$this->name = $name;
 			$this->selector = $selector;
 		}
