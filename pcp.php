@@ -413,7 +413,7 @@
 							$this->deps[$dep] = $pcp->state['selectors'][$scope][$splitdep[3]];
 							$scope = '';
 						} else
-							$scope = preg_replace('/[ >+].*$/', '', $scope, -1, $n);
+							$scope = preg_replace('/[ >+].*$/', '', $scope, 1, $n);
 					}
 				} else
 				{
