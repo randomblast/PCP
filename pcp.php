@@ -490,10 +490,4 @@
 			return $this->deps;
 		}
 	}
-	/**
-	 * Get or set a single property or variable in a selector
-	 */
-	function pcp($selector, $property, $value = null)
-	{
-	}
 ?>
