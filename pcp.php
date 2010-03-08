@@ -367,7 +367,7 @@
 	 * @param PCP_Property $p Property that wants to depend on this one
 	 * @returns bool True on success, false on failure
 	 */
-	function add_dependant(&$p)
+	private function add_dependant(&$p)
 	{
 		if($p && !isset($this->dependants[$p->selector.$p->name]))
 			$this->dependants[$p->selector.$p->name] = $p;
@@ -381,7 +381,7 @@
 	 * @param PCP_Property $p Property to remove from dependant list
 	 * @returns bool True when property is removed, false when property wasn't there
 	 */
-	function remove_dependant(&$p)
+	private function remove_dependant(&$p)
 	{
 		if(isset($this->dependants[$p->selector.$p->name]))
 		{
