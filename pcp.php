@@ -255,20 +255,35 @@
 			return serialize($state);
 		}
 
-		/// Write static CSS
-		function css()
+		/**
+		 * Generate a string of static CSS
+		 * @param bool $diff Should the output be a diff from the last call, or the entire state?
+		 * @returns string Minified CSS
+		 */
+		function css($diff = true)
 		{
 			ob_start();
 
 			foreach($this->state['selectors'] as $selector => $properties)
 			{
+				ob_start();
+
+				// Don't output selectors with no changed properties
+				$empty = true;
+
 				echo "$selector{";
 				
 				foreach($properties as $p)
-					if($p->name[0] != '$')
+					if($p->name[0] != '$' && (!$diff || $p->changed()))
+					{
 						echo "{$p->name}:{$p->value()};";
+						$empty = false;
+					}
 
 				echo '}';
+
+				if(!$empty)
+					echo ob_get_clean();
 			}
 
 			return ob_get_clean();
