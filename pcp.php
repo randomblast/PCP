@@ -328,7 +328,7 @@
 			if(!$this->changed())
 				return $this->rvalue;
 
-			// TODO Parse property, replace dependency tokens with $dep->value()
+			// Initialize rvalue
 			$this->rvalue = $this->value;
 
 			$deps = $this->deps();
