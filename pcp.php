@@ -324,6 +324,7 @@
 		var $cn;				/// int Column number
 		var $selector;			/// string Selector containing this property
 		var $deps;				/// array Properties this depends on. @see PCP_Property
+		var $dependants;		/// array Properties that depend on this. @see PCP_Property
 		var $changed;			/// bool Has set() been called since last value()
 
 		function __construct($selector, $name)
@@ -360,6 +361,35 @@
 			return $this->rvalue;
 		}
 
+	/**
+	 * Register a dependant on this property.
+	 * We need to be able to navigate down the dependancy tree in order to generate diffs.
+	 * @param PCP_Property $p Property that wants to depend on this one
+	 * @returns bool True on success, false on failure
+	 */
+	function add_dependant(&$p)
+	{
+		if($p && !isset($this->dependants[$p->selector.$p->name]))
+			$this->dependants[$p->selector.$p->name] = $p;
+		else
+			return false;
+		return true;
+	}
+	/**
+	 * Deregister a dependant.
+	 * Used when the previously dependant value is changed to no longer include this one.
+	 * @param PCP_Property $p Property to remove from dependant list
+	 * @returns bool True when property is removed, false when property wasn't there
+	 */
+	function remove_dependant(&$p)
+	{
+		if(isset($this->dependants[$p->selector.$p->name]))
+		{
+			$this->dependants[$p->selector.$p->name] = null;
+			return true;
+		} else
+			return false;
+	}
 		/**
 		 * Set new value
 		 */
@@ -452,6 +482,10 @@
 					}
 				}
 			}
+
+			// Register ourselves as a dependant on each dependency
+			foreach($this->deps as $dep)
+				$dep->add_dependant($this);
 
 			return $this->deps;
 		}
