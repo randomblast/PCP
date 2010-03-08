@@ -377,10 +377,14 @@
 		/**
 		 * Has $this->value, or any dependency values changed?
 		 * This function will be called frequently - it must be fast
+		 * @param null|bool new_value Set $changed to a specified value
 		 * @returns bool
 		 */
-		function changed()
+		function changed($new_value = null)
 		{
+			if($new_value !== null)
+				$this->changed = $new_value;
+
 			// Check for changed $this->value
 			if($this->changed == true)
 				return true;
