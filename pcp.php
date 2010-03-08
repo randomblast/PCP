@@ -284,6 +284,8 @@
 
 				if(!$empty)
 					echo ob_get_clean();
+				else
+					ob_clean();
 			}
 
 			return ob_get_clean();
