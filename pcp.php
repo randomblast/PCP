@@ -477,39 +477,6 @@
 			return false;
 		}
 
-	/**
-	 * Move a property to a new selector
-	 */
-	function rebase($new)
-	{
-		// Invalidate dependencies
-		$deps = null;
-
-		// Replace old selector with new in dependants
-		$dependants = array();
-
-		foreach($this->dependants as $d)
-		{
-			// Rename selector
-			$new_selector = str_replace($this->selector, $new, $d->selector);
-			$d->selector = $new_selector;
-
-			// If the dependant already exists, use that
-			if(isset($pcp->state['selectors'][$new_selector]))
-				$d = &$pcp->state['selectors'][$new_selecor][$d->name];
-
-			// Propagate downwards
-			$d->rebase($new_selector);
-
-			// Add to new dependants list
-			$dependants["{$d->selector}->{$d->name}"] = $d;
-		}
-
-		// Replace old list of dependants with new list
-		$this->dependants = $dependants;
-
-		$this->selector = $new;
-	}
 		/**
 		 * @returns array Array of @see PCP_Property dependencies
 		 */
