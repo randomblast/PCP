@@ -372,8 +372,8 @@
 	 */
 	private function add_dependant(&$p)
 	{
-		if($p && !isset($this->dependants[$p->selector.$p->name]))
-			$this->dependants[$p->selector.$p->name] = $p;
+		if($p && !isset($this->dependants["{$p->selector}->{$p->name}"]))
+			$this->dependants["{$p->selector}->{$p->name}"] = $p;
 		else
 			return false;
 		return true;
@@ -386,9 +386,9 @@
 	 */
 	private function remove_dependant(&$p)
 	{
-		if(isset($this->dependants[$p->selector.$p->name]))
+		if(isset($this->dependants["{$p->selector}->{$p->name}"]))
 		{
-			$this->dependants[$p->selector.$p->name] = null;
+			$this->dependants["{$p->selector}->{$p->name}"] = null;
 			return true;
 		} else
 			return false;
@@ -456,7 +456,7 @@
 			$d->rebase($new_selector);
 
 			// Add to new dependants list
-			$dependants[$d->selector.$d->name] = $d;
+			$dependants["{$d->selector}->{$d->name}"] = $d;
 		}
 
 		// Replace old list of dependants with new list
