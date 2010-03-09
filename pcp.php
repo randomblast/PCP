@@ -491,20 +491,32 @@
 			$this->deps = array();
 
 			// Find variables and PCP expressions in value
-			preg_match_all('/\$(\(.*?\)|[\w-]*)/', $this->value, $matches);
+			preg_match_all('/(<|\$)(\(.*?\)|[\w-]*)/', $this->value, $matches);
 
 			// Loop through found $ tokens
 			foreach($matches[0] as $dep)
 			{
 				// Parse tokens into selector->property pairs or just property names
-				preg_match('/\$\((.*?)\s*->\s*(.*?)\s*\)|(\$[\w-]*)/', $dep, $splitdep);
+				preg_match('/\$\((.*?)\s*->\s*(.*?)\s*\)|(\$[\w-]*)|(^<*[\w-]*)/', $dep, $splitdep);
 
-				if($splitdep[3])
+				if($splitdep[4]) // <property-name form
 				{
-					// Property name 
+					$scope = $this->selector;
+					
+					// Remove a selector from the end for each '<' found
+					$upshifts = strlen(preg_replace('/^\s*(<*).*$/', '$1', $splitdep[4]));
+					while($upshifts--)
+						$scope = preg_replace('/[ >+].*$/', '', $scope, 1);
 
+					$pname = preg_replace('/^<*/', '', $splitdep[4]);
+
+					$this->deps[$dep] = $pcp->state['selectors'][$scope][$pname];
+
+				} else if($splitdep[3]) // $property-name form
+				{
 					// Broaden scope until we find the named property
 					$scope = $this->selector;
+
 					$n = 1;
 					while($n)
 					{
@@ -515,10 +527,8 @@
 						} else
 							$scope = preg_replace('/[ >+].*$/', '', $scope, 1, $n);
 					}
-				} else
+				} else // $(selector->property) form
 				{
-					// Selector->Property
-					
 					if(!($this->deps[$dep] = $pcp->state['selectors'][$splitdep[1]][$splitdep[2]]))
 					{
 						trigger_error(
