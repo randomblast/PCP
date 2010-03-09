@@ -249,6 +249,52 @@
 			} // foreach($state['sources'])
 		}
 
+		/**
+		 * @param string $base Selector to extend
+		 * @param string $sub Selector to put changes into
+		 * @param array $delta name=>value pairs of properties to modify in the subclass
+		 * @returns bool True on success, false on failure
+		 */
+		function extend($base, $sub, $delta)
+		{
+			// Get specified selector from $state, or bomb if it's not there
+			if(false === ($properties = $this->state['selectors'][$base]))
+				return false;
+
+			// Make a copy of selector with new name
+			foreach($this->state['selectors'][$base] as $old_p)
+			{
+				$p = clone $old_p;
+
+				$p->selector = str_replace($base, $sub, $p->selector);
+				$p->changed = false;
+
+				$p->deps = null;
+				$deps = $p->dependants;
+				$p->dependants = array();
+
+
+				// Clone dependant tree
+				foreach($deps as $old_dep)
+				{
+					$dep = clone $old_dep;
+
+					$dep->selector = str_replace($base, $sub, $dep->selector);
+
+					$dep->deps = null;
+					$dep->changed = false;
+
+					$this->state['selectors'][$dep->selector][$dep->name] = $dep;
+					$p->dependants["{$dep->selector}->{$dep->name}"] = $dep;
+
+				}
+
+				$this->state['selectors'][$sub][$p->name] = $p;
+			}
+
+			foreach($delta as $name => $value)
+				$this->state['selectors'][$sub][$name]->set($value);
+		}
 		/// Return a string representing the state of the engine
 		function cache()
 		{
