@@ -404,6 +404,9 @@
 				if($p->value())
 					$this->rvalue = str_replace($dep, $p->value($is_output), $this->rvalue);
 
+			// Reduce maths ops
+			$this->rvalue = PCP_Property::compute($this->rvalue);
+
 			// Reset changed indicator and return real value
 			if($is_output)
 				$this->changed = false;
@@ -547,6 +550,25 @@
 				$dep->add_dependant($this);
 
 			return $this->deps;
+		}
+		static function compute($value)
+		{
+			$literal = '\s*([\d\.]+)(px|em|rad|%)?\s*';
+
+			return preg_replace(
+				array(
+					  '/\((.*)\)/e'						// Reduce parentheses
+					, "/{$literal}\/{$literal}/e"		// Division
+					, "/{$literal}\*{$literal}/e"		// Multiplication
+					, "/{$literal}\-{$literal}/e"		// Subtraction
+					, "/{$literal}\+{$literal}/e"		// Addition
+				), array(
+					  'PCP_Property::compute("$1")'
+					, '$3 != 0 ? ($1 / $3)."$2" : null'
+					, '($1 * $3)."$2"'
+					, '($1 - $3)."$2"'
+					, '($1 + $3)."$2"'
+				), $value);
 		}
 	}
 ?>
