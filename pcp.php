@@ -1,7 +1,14 @@
 #!/usr/bin/env php -q
 <?
-	global $pcp;
+	/**
+	 * @file pcp.php
+	 * @package PCP: CSS Preprocessor
+	 * @version 0.1
+	 * @copyright 2010 Josh Channings <josh+pcp@channings.me.uk>
+	 * @license LGPLv3
+	 */
 
+	global $pcp;
 	if($argv) main();
 
 	/**
