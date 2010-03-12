@@ -1,5 +1,67 @@
+#!/usr/bin/env php -q
 <?
 	global $pcp;
+
+	if($argv) main();
+
+	/**
+	 * CLI entry point
+	 */
+	function main()
+	{
+		global $pcp, $argc, $argv;
+
+		// Get filenames from options
+		$diff = $argv[array_search('-d', $argv) + 1];
+		$cache = $argv[array_search('-c', $argv) + 1];
+		$output = $argv[array_search('-o', $argv) + 1];
+
+		// Help/usage message
+		if(
+			   in_array(array('-h', '--help'), $argv)
+			|| $argc == 1
+			|| !$output
+		){
+			echo <<<EOF
+PCP: CSS Preprocessor [Copyright 2010 Josh Channings <josh+pcp@channings.me.uk>]
+
+Usage: {$argv[0]} [options] file.pcp file.css ...
+Options:
+	-d	Serialized cache input file (to generate a diff from)
+	-c	Serialized cache output file
+	-o	Static CSS output file
+
+EOF;
+			exit(0);
+		}
+
+		$pcp = new PCP($diff);
+
+		// Add filenames in args to sources list
+		foreach($argv as $n => $arg)
+		{
+			if(
+				   $n == 0
+				|| $arg == '-o'
+				|| $arg == '-c'
+				|| $arg == '-d'
+			)
+				$opt = true;
+			else
+			{
+				if(!$opt)
+					$pcp->add_source($arg);
+
+				$opt = false;
+			}
+		}
+
+		$pcp->parse();
+
+		if($output) file_put_contents($output, $pcp->css(true));
+		if($cache)  file_put_contents($cache, $pcp->cache());
+	}
+
 	/**
 	 * PCP Engine
 	 *
