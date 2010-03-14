@@ -9,7 +9,7 @@
 	 */
 
 	global $pcp;
-	if($argv) main();
+	if(basename($argv[0]) == basename(__FILE__)) main();
 
 	/**
 	 * CLI entry point
@@ -25,7 +25,8 @@
 
 		// Help/usage message
 		if(
-			   in_array(array('-h', '--help'), $argv)
+			   in_array('-h', $argv)
+			|| in_array('--help', $argv)
 			|| $argc == 1
 			|| !$output
 		){
