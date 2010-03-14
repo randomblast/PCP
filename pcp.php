@@ -636,12 +636,14 @@ EOF;
 					, "/{$literal}\*{$literal}/e"		// Multiplication
 					, "/{$literal}\-{$literal}/e"		// Subtraction
 					, "/{$literal}\+{$literal}/e"		// Addition
+					, '/\s/'
 				), array(
 					  'PCP_Property::compute("$2", "$1")'
 					, '$3 != 0 ? ($1 / $3)."$2" : null'
 					, '($1 * $3)."$2"'
 					, '($1 - $3)."$2"'
 					, '($1 + $3)."$2"'
+					, ''
 				), $value);
 		}
 	}
