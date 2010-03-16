@@ -624,7 +624,7 @@ EOF;
 		}
 		static function compute($value, $prev_word = null)
 		{
-			$literal = '\s*([\d\.]+)(px|em|rad|%)?\s*';
+			$literal = '([\d\.]+)(px|em|rad|%)?';
 
 			if(false === strpos($value, array('(', '/', '*', '-', '+')) && $prev_word)
 				return "$prev_word(".PCP_Property::compute($value).")";
@@ -632,10 +632,10 @@ EOF;
 			return preg_replace(
 				array(
 					  '/([\w-]*)\s*\((.*)\)/e'			// Reduce parentheses
-					, "/{$literal}\/{$literal}/e"		// Division
-					, "/{$literal}\*{$literal}/e"		// Multiplication
-					, "/{$literal}\-{$literal}/e"		// Subtraction
-					, "/{$literal}\+{$literal}/e"		// Addition
+					, "/{$literal}\s*\/\s*{$literal}/e"	// Division
+					, "/{$literal}\s*\*\s*{$literal}/e"	// Multiplication
+					, "/{$literal}\s*\-\s+{$literal}/e"	// Subtraction
+					, "/{$literal}\s*\+\s*{$literal}/e"	// Addition
 					, '/\s/'
 				), array(
 					  'PCP_Property::compute("$2", "$1")'
