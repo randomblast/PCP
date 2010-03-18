@@ -622,14 +622,16 @@ EOF;
 					{
 						if(isset($pcp->state['selectors'][$scope][$splitdep[3]]))
 						{
-							$this->deps[$dep] = $pcp->state['selectors'][$scope][$splitdep[3]];
+							$this->deps[$dep] =
+								$pcp->state['selectors'][$scope]->properties[$splitdep[3]];
 							$scope = '';
 						} else
 							$scope = preg_replace('/[ >+].*$/', '', $scope, 1, $n);
 					}
 				} else // $(selector->property) form
 				{
-					if(!($this->deps[$dep] = $pcp->state['selectors'][$splitdep[1]][$splitdep[2]]))
+					if(!($this->deps[$dep] =
+						$pcp->state['selectors'][$splitdep[1]]->properties[$splitdep[2]]))
 					{
 						trigger_error(
 							  "{$this->src}:{$this->ln}:{$this->cn}: "
