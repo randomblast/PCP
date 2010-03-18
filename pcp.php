@@ -378,16 +378,16 @@ EOF;
 		{
 			ob_start();
 
-			foreach($this->state['selectors'] as $selector => $properties)
+			foreach($this->state['selectors'] as $sel)
 			{
 				ob_start();
 
 				// Don't output selectors with no changed properties
 				$empty = true;
 
-				echo "$selector{";
+				echo "{$sel->output_name()}{";
 				
-				foreach($properties as $p)
+				foreach($sel->properties as $p)
 					if($p->name[0] != '$' && (!$diff || $p->changed()))
 					{
 						echo "{$p->name}:{$p->value(true)};";
