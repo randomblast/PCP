@@ -677,14 +677,14 @@ private function remove_dependant(&$p)
 				, "/{$literal}\s*\*\s*{$literal}/e"	// Multiplication
 				, "/{$literal}\s*\-\s+{$literal}/e"	// Subtraction
 				, "/{$literal}\s*\+\s*{$literal}/e"	// Addition
-				, '/\s/'
+				, '/\s\s+/'
 			), array(
 				  'PCP_Property::compute("$2", "$1")'
 				, '$3 != 0 ? ($1 / $3)."$2" : null'
 				, '($1 * $3)."$2"'
 				, '($1 - $3)."$2"'
 				, '($1 + $3)."$2"'
-				, ''
+				, ' '
 			), $value);
 	}
 }
