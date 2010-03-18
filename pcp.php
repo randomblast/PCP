@@ -177,9 +177,9 @@ class PCP
 
 							// Add selector to stack
 							if(count($selector))
-								array_push($selector, end($selector).'>'.$sels[0]);
+								array_push($selector, end($selector).'>'.PCP::clean_token($sels[0]));
 							else
-								array_push($selector, $sels[0]);
+								array_push($selector, PCP::clean_token($sels[0]));
 
 							// Instantiate PCP_Selector for new name
 							if(!isset($this->state['selectors'][end($selector)]))
