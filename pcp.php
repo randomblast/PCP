@@ -621,7 +621,7 @@ private function remove_dependant(&$p)
 
 				$pname = preg_replace('/^<*/', '', $splitdep[4]);
 
-				$this->deps[$dep] = $pcp->state['selectors'][$scope][$pname];
+				$this->deps[$dep] = $pcp->state['selectors'][$scope]->properties[$pname];
 
 			} else if($splitdep[3]) // $property-name form
 			{
