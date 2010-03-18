@@ -173,15 +173,22 @@ EOF;
 							case '{':	// selector { properties
 
 								// Convert buffer into selector, then clear
-								if(false === ($sel = $this->clean_token($buf))) fclose($fd);
+								$sels = explode(',', trim($buf));
 								$buf = '';
 
 								// Add selector to stack
 								if(count($selector))
-									array_push($selector, end($selector).'>'.$sel);
+									array_push($selector, end($selector).'>'.$sels[0]);
 								else
-									array_push($selector, $sel);
+									array_push($selector, $sels[0]);
 
+								// Instantiate PCP_Selector for new name
+								if(!isset($this->state['selectors'][end($selector)]))
+									$this->state['selectors'][end($selector)] = new PCP_Selector(end($selector));
+
+								// Add any comma-delimited selectors as references
+								for($i = 1;$i < count($sels);$i++)
+									$this->state['selectors'][end($selector)]->add_ref($sels[$i]);
 								break;
 
 							case '}':	// properties }
@@ -251,12 +258,12 @@ EOF;
 									$p->cn = $cn;
 
 									$buf = '';
-									$fselectors[end($selector)][$p->name] = &$p;
+									$this->state['selectors'][end($selector)]->properties[$p->name] = &$p;
 								}
 
 								break;
 
-							case ';':	// property value ;
+							case ';':	// property value ; || reference name ;
 
 								if($p)
 								{
@@ -265,13 +272,29 @@ EOF;
 									unset($p);
 								} else
 								{
-									trigger_error(
-										  "$src:$ln:$cn: Found ';' with no open property"
-										, E_USER_ERROR
-									);
-									fclose($fd);
-								}
+									// Mixin references
 
+									// Check there is a selector to refer from
+									if(!count($selector))
+									{
+										trigger_error(
+											  "$src:$ln:$cn: Unexpected ';'"
+											, E_USER_ERROR
+										);
+										fclose($fd);
+										break;
+									}
+
+									$ref = self::clean_token($buf);
+									$buf = '';
+
+									// Make sure the referenced selector exists
+									if(!isset($this->state['selectors'][$ref]))
+										$this->state['selectors'][$ref] = new PCP_Selector($ref);
+
+									// Add a reference to the current selector
+									$this->state['selectors'][$ref]->add_ref(end($selector));
+								}
 								break;
 
 							case "\n":	// Newline
