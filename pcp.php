@@ -406,10 +406,8 @@ class PCP
 
 			echo '}';
 
-			if(!$empty)
-				echo ob_get_clean();
-			else
-				ob_clean();
+			if(!$empty) echo ob_get_clean();
+			else ob_end_clean();
 		}
 
 		return ob_get_clean();
