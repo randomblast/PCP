@@ -297,7 +297,7 @@ class PCP
 							break;
 
 						case "\n":	// Newline
-							$buf .= ' ';
+							$buf .= "\n";
 							$ln++;
 							$cn = 0;
 							break;
@@ -428,7 +428,7 @@ class PCP
 				, '/^\s+/'				// Strip whitespace from beginning
 				, '/\s+$/'				// Strip whitespace from end
 				, '/\/\*.*?\*\//'		// /* Comment */
-				, '/\/\/.*?$/'			// // Comment
+				, '/\/\/.*$/m'			// // Comment
 			), array(
 				  '>'
 				, '+'
