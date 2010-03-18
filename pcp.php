@@ -433,6 +433,35 @@ EOF;
 		}
 	}
 
+	class PCP_Selector
+	{
+		private $primary;
+		private $secs = array();
+
+		public $properties = array();
+
+		public function __construct($name)
+		{
+			$this->primary = PCP::clean_token($name);
+		}
+
+		/** Get the primary name of this selector */
+		public function name() {return $this->primary;}
+
+		/** Get comma-delimited primary name and references for CSS output */
+		public function output_name()
+		{
+			if(count($this->secs))
+				return "{$this->primary},".implode(',', $this->secs);
+			else
+				return $this->primary;
+		}
+		/**
+		 * Add a reference to this selector from $sel
+		 */
+		public function add_ref($sel) {array_push($this->secs, PCP::clean_token($sel));}
+
+	}
 	class PCP_Property
 	{
 		var $name;				/// string
