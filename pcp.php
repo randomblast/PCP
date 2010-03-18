@@ -3,7 +3,7 @@
 /**
  * @file pcp.php
  * @package PCP: CSS Preprocessor
- * @version 0.2.1
+ * @version 0.2.2
  * @copyright 2010 Josh Channings <josh+pcp@channings.me.uk>
  * @license LGPLv3
  */
