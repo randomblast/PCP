@@ -249,7 +249,7 @@ EOF;
 
 									$p = new PCP_Property(
 										  end($selector)
-										, $this->clean_token($buf)
+										, self::clean_token($buf)
 									);
 
 									$p->src = $src;
