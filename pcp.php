@@ -633,7 +633,7 @@ private function remove_dependant(&$p)
 				$n = 1;
 				while($n)
 				{
-					if(isset($pcp->state['selectors'][$scope][$splitdep[3]]))
+					if(isset($pcp->state['selectors'][$scope]->properties[$splitdep[3]]))
 					{
 						$this->deps[$dep] =
 							$pcp->state['selectors'][$scope]->properties[$splitdep[3]];
