@@ -19,9 +19,9 @@ function main()
 	global $pcp, $argc, $argv;
 
 	// Get filenames from options
-	$diff = $argv[array_search('-d', $argv) + 1];
-	$cache = $argv[array_search('-c', $argv) + 1];
-	$output = $argv[array_search('-o', $argv) + 1];
+	$diff = ($n = array_search('-d', $argv)) ? $argv[$n + 1] : null;
+	$cache = ($n = array_search('-c', $argv)) ? $argv[$n + 1] : null;
+	$output = ($n = array_search('-o', $argv)) ? $argv[$n + 1] : null;
 
 	// Help/usage message
 	if(
