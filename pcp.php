@@ -9,12 +9,11 @@
  */
 
 global $pcp;
-if(basename($argv[0]) == basename(__FILE__)) main();
 
 /**
  * CLI entry point
  */
-function main()
+if(basename($argv[0]) == basename(__FILE__))
 {
 	global $pcp, $argc, $argv;
 
