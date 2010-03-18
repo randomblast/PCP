@@ -472,13 +472,16 @@ EOF;
 		var $dependants;		/// array Properties that depend on this. @see PCP_Property
 		var $changed;			/// bool Has set() been called since last value()
 
-		function __construct($selector, $name)
+		function __construct($selector, $name, $value = null)
 		{
 			// TODO Validate these inputs, add error messages
 			$this->deps = array();
 			$this->dependants = array();
 			$this->name = $name;
 			$this->selector = $selector;
+
+			if($value !== null)
+				$this->set($value);
 		}
 
 		/**
