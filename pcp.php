@@ -325,11 +325,15 @@ EOF;
 		function extend($base, $sub, $delta)
 		{
 			// Get specified selector from $state, or bomb if it's not there
-			if(false === ($properties = $this->state['selectors'][$base]))
+			if(false === ($properties = $this->state['selectors'][$base]->properties))
 				return false;
 
-			// Make a copy of selector with new name
-			foreach($this->state['selectors'][$base] as $old_p)
+			// Make sure sub selector exists
+			if(!isset($this->state['selectors'][$sub]))
+				$this->state['selectors'][$sub] = new PCP_Selector($sub);
+
+			// Clone PCP_Properties from old selector
+			foreach($this->state['selectors'][$base]->properties as $old_p)
 			{
 				$p = clone $old_p;
 
@@ -351,16 +355,22 @@ EOF;
 					$dep->deps = null;
 					$dep->changed = false;
 
-					$this->state['selectors'][$dep->selector][$dep->name] = $dep;
+					$this->state['selectors'][$dep->selector]->properties[$dep->name] = $dep;
 					$p->dependants["{$dep->selector}->{$dep->name}"] = $dep;
 
 				}
 
-				$this->state['selectors'][$sub][$p->name] = $p;
+				$this->state['selectors'][$sub]->properties[$p->name] = $p;
 			}
 
 			foreach($delta as $name => $value)
-				$this->state['selectors'][$sub][$name]->set($value);
+			{
+				if(isset($this->state['selectors'][$sub]->properties[$name]))
+					$this->state['selectors'][$sub]->properties[$name]->set($value);
+				else
+					$this->state['selectors'][$sub]->properties[$name] =
+						new PCP_Property($sub, $name, $value);
+			}
 		}
 		/// Return a string representing the state of the engine
 		function cache()
