@@ -323,45 +323,15 @@ class PCP
 	 */
 	function extend($base, $sub, $delta)
 	{
-		// Get specified selector from $state, or bomb if it's not there
-		if(false === ($properties = $this->state['selectors'][$base]->properties))
+		// Check $base selector exists
+		if(!isset($this->state['selectors'][$base]))
 			return false;
 
-		// Make sure sub selector exists
-		if(!isset($this->state['selectors'][$sub]))
-			$this->state['selectors'][$sub] = new PCP_Selector($sub);
+		// Clone $base selector as $sub (PCP_Selector will handle recursion)
+		$this->state['selectors'][$sub] = clone $this->state['selectors'][$base];
+		$this->state['selectors'][$sub]->rename($sub);
 
-		// Clone PCP_Properties from old selector
-		foreach($this->state['selectors'][$base]->properties as $old_p)
-		{
-			$p = clone $old_p;
-
-			$p->selector = str_replace($base, $sub, $p->selector);
-			$p->changed = false;
-
-			$p->deps = null;
-			$deps = $p->dependants;
-			$p->dependants = array();
-
-
-			// Clone dependant tree
-			foreach($deps as $old_dep)
-			{
-				$dep = clone $old_dep;
-
-				$dep->selector = str_replace($base, $sub, $dep->selector);
-
-				$dep->deps = null;
-				$dep->changed = false;
-
-				$this->state['selectors'][$dep->selector]->properties[$dep->name] = $dep;
-				$p->dependants["{$dep->selector}->{$dep->name}"] = $dep;
-
-			}
-
-			$this->state['selectors'][$sub]->properties[$p->name] = $p;
-		}
-
+		// Change properties in new tree
 		foreach($delta as $name => $value)
 		{
 			if(isset($this->state['selectors'][$sub]->properties[$name]))
@@ -449,6 +419,30 @@ class PCP_Selector
 		$this->primary = PCP::clean_token($name);
 	}
 
+	/** This is for cloning a selector tree by extend() */
+	public function __clone()
+	{
+		$this->secs = array();
+	}
+
+	/** This needs to be called when we're cloned */
+	public function rename($name)
+	{
+		// Copy & clear properties
+		$ps = $this->properties;
+		$this->properties = array();
+
+		// Clone properties with new selector name
+		foreach($ps as $p)
+		{
+			$p->rebase($name, $this->primary);
+			$this->properties[$p->name] = clone $p;
+		}
+
+		// Set new name
+		$this->primary = $name;
+	}
+
 	/** Get the primary name of this selector */
 	public function name() {return $this->primary;}
 
@@ -489,6 +483,41 @@ class PCP_Property
 
 		if($value !== null)
 			$this->set($value);
+	}
+
+	/** Called by PCP_Selector::rename() */
+	function __clone()
+	{
+		$this->deps = null;
+	}
+
+	/** Move a property over to a new selector */
+	function rebase($new_selector, $old_selector = null)
+	{
+		// Rename selector
+		if($old_selector !== null)
+			$this->selector = str_replace($old_selector, $new_selector, $this->selector);
+		else
+			$this->selector = $new_selector;
+
+		// Clear precalculated dependencies
+		$deps = null;
+
+		// Clone dependant tree...
+		$ds = $this->dependants;
+		$this->dependants = array();
+		foreach($ds as $d)
+		{
+			// ...recursively
+			$d->rebase($new_selector, $old_selector);
+
+			// Make sure the new selector exists
+			if(!isset($pcp->state['selectors'][$d->selector]))
+				$pcp->state['selectors'][$d->selector] = new PCP_Selector($d->selector);
+
+			// Put dependant back in tree
+			$this->add_dependant($d);
+		}
 	}
 
 	/**
@@ -555,7 +584,7 @@ private function remove_dependant(&$p)
 	function set($new)
 	{
 		$this->value = $new;
-
+		
 		// Tell changed() about the new value
 		$this->changed = true;
 
