@@ -129,7 +129,7 @@ class PCP
 		$pcp = &$this;
 	}
 
-	/// @param string|array $source .pcp/.css file to add to the list of files to parse
+	/** @param string|array $source .pcp/.css file to add to the list of files to parse */
 	function add_source($source)
 	{
 		if(is_array($source))
@@ -144,7 +144,7 @@ class PCP
 		}
 	}
 
-	/// Clear state, parse sources into state
+	/** Clear state, parse sources into state */
 	function parse()
 	{
 		// Clear the state
@@ -379,11 +379,11 @@ class PCP
 		return ob_get_clean();
 	}
 
-	/// Write javascript engine
+	/** Write javascript engine */
 	function js()
 	{
 	}
-	/// Validate selectors/property names and prepare for use as a hash
+	/** Validate selectors/property names and prepare for use as a hash */
 	function clean_token($sel)
 	{
 		return preg_replace(
