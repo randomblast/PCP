@@ -82,12 +82,8 @@ EOF;
  */
 class PCP
 {
-	var $state = array(
-		  'sources' => array()
-		, 'variables' => array()
-		// $state['selectors']['div.foo#bar'] = array(PCP_Property, PCP_Property, ...)
-		, 'selectors' => array()
-	);
+	private $sources = array();			/** @var string $sources */
+	public $selectors = array();		/** @var PCP_Selector $selectors */
 
 	private $pseudo_classes = array(
 		// CSS 1
@@ -126,7 +122,7 @@ class PCP
 	function __construct($cache = null)
 	{
 		if(file_exists($cache))
-			$this->state = unserialize(@file_get_contents($cache));
+			$this->selectors = unserialize(@file_get_contents($cache));
 
 		// Hook into global
 		global $pcp;
@@ -140,11 +136,11 @@ class PCP
 		{
 			foreach($source as $src)
 				if(file_exists($src))
-					array_push($this->state['sources'], $src);
+					array_push($this->sources, $src);
 		} else
 		{
 			if(file_exists($source))
-				array_push($this->state['sources'], $source);
+				array_push($this->sources, $source);
 		}
 	}
 
@@ -152,10 +148,9 @@ class PCP
 	function parse()
 	{
 		// Clear the state
-		$this->state['variables'] = array();
-		$this->state['selectors'] = array();
+		$this->selectors = array();
 
-		foreach($this->state['sources'] as $src)
+		foreach($this->sources as $src)
 		{
 			if(false !== ($fd = fopen($src, 'r')))
 			{
@@ -181,12 +176,15 @@ class PCP
 								array_push($selector, PCP::clean_token($sels[0]));
 
 							// Instantiate PCP_Selector for new name
-							if(!isset($this->state['selectors'][end($selector)]))
-								$this->state['selectors'][end($selector)] = new PCP_Selector(end($selector));
+							if(!isset($this->selectors[end($selector)]))
+								 new PCP_Selector(
+								 	  end($selector)
+									, count($selector) > 1 ? $selector[count($selector) - 2] : null
+								);
 
 							// Add any comma-delimited selectors as references
 							for($i = 1;$i < count($sels);$i++)
-								$this->state['selectors'][end($selector)]->add_ref($sels[$i]);
+								$this->selectors[end($selector)]->add_ref($sels[$i]);
 							break;
 
 						case '}':	// properties }
@@ -209,6 +207,7 @@ class PCP
 											 ."Assumed '{$p->name}: ".trim($buf).";'"
 											, E_USER_WARNING
 										);
+										// TODO write test case, this isn't actually being handled?
 
 									} else
 									{
@@ -287,11 +286,11 @@ class PCP
 								$buf = '';
 
 								// Make sure the referenced selector exists
-								if(!isset($this->state['selectors'][$ref]))
-									$this->state['selectors'][$ref] = new PCP_Selector($ref);
+								if(!isset($this->selectors[$ref]))
+									new PCP_Selector($ref);
 
 								// Add a reference to the current selector
-								$this->state['selectors'][$ref]->add_ref(end($selector));
+								$this->selectors[$ref]->add_ref(end($selector));
 							}
 							break;
 
@@ -324,28 +323,26 @@ class PCP
 	function extend($base, $sub, $delta)
 	{
 		// Check $base selector exists
-		if(!isset($this->state['selectors'][$base]))
+		if(!isset($this->selectors[$base]))
 			return false;
 
-		// Clone $base selector as $sub (PCP_Selector will handle recursion)
-		$this->state['selectors'][$sub] = clone $this->state['selectors'][$base];
-		$this->state['selectors'][$sub]->rename($sub);
+		// Copy tree
+		$this->selectors[$base]->copy($sub);
 
 		// Change properties in new tree
 		foreach($delta as $name => $value)
 		{
-			if(isset($this->state['selectors'][$sub]->properties[$name]))
-				$this->state['selectors'][$sub]->properties[$name]->set($value);
+			if(isset($this->selectors[$sub]->properties[$name]))
+				$this->selectors[$sub]->properties[$name]->set($value);
 			else
-				$this->state['selectors'][$sub]->properties[$name] =
-					new PCP_Property($sub, $name, $value);
+				new PCP_Property($sub, $name, $value);
 		}
 	}
-	/// Return a string representing the state of the engine
+	/** Return a string representing the state of the engine */
 	function cache()
 	{
-		if($this->state)
-			return serialize($this->state);
+		if(count($this->selectors))
+			return serialize($this->selecors);
 	}
 
 	/**
@@ -649,7 +646,7 @@ private function remove_dependant(&$p)
 
 				$pname = preg_replace('/^<*/', '', $splitdep[4]);
 
-				$this->deps[$dep] = $pcp->state['selectors'][$scope]->properties[$pname];
+				$this->deps[$dep] = $pcp->selectors[$scope]->properties[$pname];
 
 			} else if($splitdep[3]) // $property-name form
 			{
@@ -659,18 +656,19 @@ private function remove_dependant(&$p)
 				$n = 1;
 				while($n)
 				{
-					if(isset($pcp->state['selectors'][$scope]->properties[$splitdep[3]]))
+					if(isset($pcp->selectors[$scope]->properties[$splitdep[3]]))
 					{
 						$this->deps[$dep] =
-							$pcp->state['selectors'][$scope]->properties[$splitdep[3]];
+							$pcp->selectors[$scope]->properties[$splitdep[3]];
 						$scope = '';
+						$n = 0;
 					} else
 						$scope = preg_replace('/[ >+].*$/', '', $scope, 1, $n);
 				}
-			} else // $(selector->property) form
+			} else // selector->property form
 			{
 				if(!($this->deps[$dep] =
-					$pcp->state['selectors'][$splitdep[1]]->properties[$splitdep[2]]))
+					$pcp->selectors[$splitdep[1]]->properties[$splitdep[2]]))
 				{
 					trigger_error(
 						  "{$this->src}:{$this->ln}:{$this->cn}: "
