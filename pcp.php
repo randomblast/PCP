@@ -341,7 +341,7 @@ class PCP
 	function cache()
 	{
 		if(count($this->selectors))
-			return serialize($this->selecors);
+			return serialize($this->selectors);
 	}
 
 	/**
