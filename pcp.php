@@ -337,6 +337,20 @@ class PCP
 				new PCP_Property($sub, $name, $value);
 		}
 	}
+	/** Retrieve a value */
+	function get($selector, $property, $strip_units = false)
+	{
+		if(!isset($this->selectors[$selector])) return null;
+		if(!isset($this->selectors[$selector]->properties[$property])) return null;
+		if($strip_units)
+			return preg_replace(
+				  '/(px|em|rad|%)$/'
+				, ''
+				, $this->selectors[$selector]->properties[$property]->value()
+			);
+		else
+			return $this->selectors[$selector]->properties[$property]->value();
+	}
 	/** Return a string representing the state of the engine */
 	function cache()
 	{
