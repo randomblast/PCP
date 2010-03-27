@@ -679,61 +679,69 @@ private function remove_dependant(&$p)
 		$this->deps = array();
 
 		// Find variables and PCP expressions in value
-		preg_match_all('/(<|\$)[\w-]*|[\w-+#>\.]*\s*->\s*\$?[\w-]*/', $this->value, $matches);
+		preg_match_all('/([\w\.#\+~-]+)->(\$?[\w-]+)|(<*)(\$?[\w-]+)/', $this->value, $matches);
 
 		// Loop through found $ tokens
-		foreach($matches[0] as $dep)
+		foreach($matches[0] as $i => $dep)
 		{
-			// Parse tokens into selector->property pairs or just property names
-			preg_match(
-				  '/([\w-+#>\.]*)\s*->\s*(\$?[\w-]*)\s*|(\$[\w-]*)|(^<*[\w-]*)/'
-				, $dep
-				, $splitdep
-			);
-
-			if($splitdep[4]) // <property-name form
+			if($matches[4][$i]) // (<)property-name form
 			{
 				$scope = $this->selector;
 
 				// Remove a selector from the end for each '<' found
-				$upshifts = strlen(preg_replace('/^\s*(<*).*$/', '$1', $splitdep[4]));
-				while($upshifts--)
-					$scope = preg_replace('/[ >+].*$/', '', $scope, 1);
-
-				$pname = preg_replace('/^<*/', '', $splitdep[4]);
-
-				$this->deps[$dep] = $pcp->selectors[$scope]->properties[$pname];
-
-			} else if($splitdep[3]) // $property-name form
-			{
-				// Broaden scope until we find the named property
-				$scope = $this->selector;
-
-				$n = 1;
-				while($n)
+				$upshifts = strlen($matches[3][$i]);
+				if($upshifts)
 				{
-					if(isset($pcp->selectors[$scope]->properties[$splitdep[3]]))
+					while($upshifts--)
+						$scope = preg_replace('/[ >+~].*$/', '', $scope, 1);
+
+					if(
+						isset($pcp->selectors[$scope]) &&
+						isset($pcp->selectors[$scope]->properties[$matches[4][$i]])
+					)
+						$this->deps[$matches[0][$i]] =
+							$pcp->selectors[$scope]->properties[$matches[4][$i]];
+					else
+						trigger_error(
+						  "{$this->src}:{$this->ln}:{$this->cn}: "
+						 ."Reference made to undeclared property '{$matches[4][$i]}' "
+						 ."in '{$scope}'"
+						, E_USER_ERROR
+					);
+
+				} else
+				{
+					// Broaden scope until we find the named property
+					$scope = $this->selector;
+
+					$n = 1;
+					while($n)
 					{
-						$this->deps[$dep] =
-							$pcp->selectors[$scope]->properties[$splitdep[3]];
-						$scope = '';
-						$n = 0;
-					} else
-						$scope = preg_replace('/[ >+].*$/', '', $scope, 1, $n);
+						if(isset($pcp->selectors[$scope]->properties[$matches[4][$i]]))
+						{
+							$this->deps[$matches[0][$i]] =
+								$pcp->selectors[$scope]->properties[$matches[4][$i]];
+
+							$n = 0;
+						} else
+							$scope = preg_replace('/[ >+].*$/', '', $scope, 1, $n);
+					}
 				}
 			} else // selector->property form
 			{
-				if(!($this->deps[$dep] =
-					$pcp->selectors[$splitdep[1]]->properties[$splitdep[2]]))
-				{
+				if(
+					isset($pcp->selectors[$matches[1][$i]]) &&
+					isset($pcp->selectors[$matches[1][$i]]->properties[$matches[2][$i]])
+				)
+					$this->deps[$matches[0][$i]] =
+						$pcp->selectors[$matches[1][$i]]->properties[$matches[2][$i]];
+				else
 					trigger_error(
 						  "{$this->src}:{$this->ln}:{$this->cn}: "
-						 ."Reference made to undeclared property '{$splitdep[2]}' "
-						 ."in '{$splitdep[1]}'"
+						 ."Reference made to undeclared property '{$matches[2][$i]}' "
+						 ."in '{$matches[1][$i]}'"
 						, E_USER_ERROR
 					);
-					exit(-1);
-				}
 			}
 		}
 
