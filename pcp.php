@@ -684,7 +684,22 @@ private function remove_dependant(&$p)
 		// Loop through found $ tokens
 		foreach($matches[0] as $i => $dep)
 		{
-			if($matches[4][$i]) // (<)property-name form
+			if($matches[1][$i] && $matches[2][$i]) // selector->property form
+			{
+				if(
+					isset($pcp->selectors[$matches[1][$i]]) &&
+					isset($pcp->selectors[$matches[1][$i]]->properties[$matches[2][$i]])
+				)
+					$this->deps[$matches[0][$i]] =
+						$pcp->selectors[$matches[1][$i]]->properties[$matches[2][$i]];
+				else
+					trigger_error(
+						  "{$this->src}:{$this->ln}:{$this->cn}: "
+						 ."Reference made to undeclared property '{$matches[2][$i]}' "
+						 ."in '{$matches[1][$i]}'"
+						, E_USER_ERROR
+					);
+			} else if($matches[4][$i]) // (<)property-name form
 			{
 				$scope = $this->selector;
 
@@ -727,21 +742,6 @@ private function remove_dependant(&$p)
 							$scope = preg_replace('/[ >+].*$/', '', $scope, 1, $n);
 					}
 				}
-			} else // selector->property form
-			{
-				if(
-					isset($pcp->selectors[$matches[1][$i]]) &&
-					isset($pcp->selectors[$matches[1][$i]]->properties[$matches[2][$i]])
-				)
-					$this->deps[$matches[0][$i]] =
-						$pcp->selectors[$matches[1][$i]]->properties[$matches[2][$i]];
-				else
-					trigger_error(
-						  "{$this->src}:{$this->ln}:{$this->cn}: "
-						 ."Reference made to undeclared property '{$matches[2][$i]}' "
-						 ."in '{$matches[1][$i]}'"
-						, E_USER_ERROR
-					);
 			}
 		}
 
