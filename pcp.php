@@ -197,7 +197,7 @@ class PCP
 							} else
 							{
 								// Check for open property
-								if($p)
+								if(isset($p))
 								{
 									// Check for potential value in the buffer
 									if(strlen(trim($buf)))
@@ -226,7 +226,7 @@ class PCP
 						case ':':	// property name : property value
 
 							// Is there already an open property?
-							if($p)
+							if(isset($p))
 								$buf .= ':';
 							else
 							{
@@ -261,7 +261,7 @@ class PCP
 
 						case ';':	// property value ; || reference name ;
 
-							if($p)
+							if(isset($p))
 							{
 								$p->set(trim($buf));
 								$buf = '';
