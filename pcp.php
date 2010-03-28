@@ -227,8 +227,10 @@ class PCP
 
 							// Is there already an open property?
 							if(isset($p))
+							{
 								$buf .= ':';
-							else
+								$cn++;
+							} else
 							{
 								// Look ahead for pseudo-class names
 								// We need to do this to differentiate between nested selectors
