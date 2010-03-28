@@ -85,37 +85,6 @@ class PCP
 	private $sources = array();			/** @var string $sources */
 	public $selectors = array();		/** @var PCP_Selector $selectors */
 
-	private $pseudo_classes = array(
-		// CSS 1
-		  'active'
-		, 'hover'
-		, 'link'
-		, 'visited'
-
-		// CSS 2
-		, 'first-child'
-		, 'focus'
-		, 'lang'
-
-		// CSS 3
-		, 'nth-child'
-		, 'nth-last-child'
-		, 'nth-of-type'
-		, 'nth-last-of-type'
-		, 'last-child'
-		, 'first-of-type'
-		, 'last-of-type'
-		, 'only-child'
-		, 'only-of-type'
-		, 'root'
-		, 'empty'
-		, 'target'
-		, 'enabled'
-		, 'disabled'
-		, 'checked'
-		, 'not'
-	);
-
 	/**
 	 * @param string $cache Filename of engine cache
 	 */
@@ -232,16 +201,13 @@ class PCP
 								$cn++;
 							} else
 							{
-								// Look ahead for pseudo-class names
-								// We need to do this to differentiate between nested selectors
-								// and properties.
-								// TODO Maybe redo this to just see which comes first of (;|{)?
-								$la = fread($fd, 24);
-								fseek($fd, -(strlen($la)), SEEK_CUR);
-								$la = preg_replace('/\W.*/', '', $la);
+								$n = 1;
+								while(false !== ($la = fgetc($fd)) && $la != ';' && $la != '{')
+									$n++;
 
-								// If next word is a valid pseudo-class, pass ':' through to $buf
-								if(in_array($la, $this->pseudo_classes))
+								fseek($fd, -$n, SEEK_CUR);
+
+								if($la == '{')
 								{
 									$buf .= ':';
 									break;
