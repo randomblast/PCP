@@ -10,63 +10,66 @@
 
 global $pcp;
 
-/**
- * CLI entry point
- */
-if(basename($argv[0]) == basename(__FILE__))
+if(!function_exists('main'))
 {
-	global $pcp, $argc, $argv;
+	/** CLI Entry Point */
+	function main()
+	{
+		global $pcp, $argc, $argv;
 
-	// Get filenames from options
-	$diff = ($n = array_search('-d', $argv)) ? $argv[$n + 1] : null;
-	$cache = ($n = array_search('-c', $argv)) ? $argv[$n + 1] : null;
-	$output = ($n = array_search('-o', $argv)) ? $argv[$n + 1] : null;
+		// Get filenames from options
+		$diff = ($n = array_search('-d', $argv)) ? $argv[$n + 1] : null;
+		$cache = ($n = array_search('-c', $argv)) ? $argv[$n + 1] : null;
+		$output = ($n = array_search('-o', $argv)) ? $argv[$n + 1] : null;
 
-	// Help/usage message
-	if(
-		   in_array('-h', $argv)
-		|| in_array('--help', $argv)
-		|| $argc == 1
-		|| !$output
-	){
-		echo <<<EOF
-PCP: CSS Preprocessor [Copyright 2010 Josh Channings <josh+pcp@channings.me.uk>]
+		// Help/usage message
+		if(
+			   in_array('-h', $argv)
+			|| in_array('--help', $argv)
+			|| $argc == 1
+			|| !$output
+		){
+			echo <<<EOF
+PCP: CSS Preprocessor
+Copyright 2010 Josh Channings <josh+pcp@channings.me.uk>
 
 Usage: {$argv[0]} [options] file.pcp file.css ...
 Options:
--d	Serialized cache input file (to generate a diff from)
--c	Serialized cache output file
--o	Static CSS output file
+	-d	Serialized cache input file (to generate a diff from)
+	-c	Serialized cache output file
+	-o	Static CSS output file
 
 EOF;
-		exit(0);
-	}
-
-	$pcp = new PCP($diff);
-
-	// Add filenames in args to sources list
-	foreach($argv as $n => $arg)
-	{
-		if(
-			   $n == 0
-			|| $arg == '-o'
-			|| $arg == '-c'
-			|| $arg == '-d'
-		)
-			$opt = true;
-		else
-		{
-			if(!$opt)
-				$pcp->add_source($arg);
-
-			$opt = false;
+			exit(0);
 		}
+
+		$pcp = new PCP($diff);
+
+		// Add filenames in args to sources list
+		foreach($argv as $n => $arg)
+		{
+			if(
+				   $n == 0
+				|| $arg == '-o'
+				|| $arg == '-c'
+				|| $arg == '-d'
+			)
+				$opt = true;
+			else
+			{
+				if(!$opt)
+					$pcp->add_source($arg);
+
+				$opt = false;
+			}
+		}
+
+		$pcp->parse();
+
+		if($output) file_put_contents($output, $pcp->css(true));
+		if($cache)  file_put_contents($cache, $pcp->cache());
 	}
-
-	$pcp->parse();
-
-	if($output) file_put_contents($output, $pcp->css(true));
-	if($cache)  file_put_contents($cache, $pcp->cache());
+	if(isset($argv) && basename($argv[0]) == basename(__FILE__)) main();
 }
 
 /**
